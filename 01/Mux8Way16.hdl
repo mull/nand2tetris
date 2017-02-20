@@ -1,0 +1,40 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/01/Mux8Way16.hdl
+
+/**
+ * 8-way 16-bit multiplexor:
+ * out = a if sel == 000
+ *       b if sel == 001
+ *       etc.
+ *       h if sel == 111
+ */
+
+CHIP Mux8Way16 {
+    IN a[16], b[16], c[16], d[16],
+       e[16], f[16], g[16], h[16],
+       sel[3];
+    OUT out[16];
+
+    PARTS:
+    // So first we need to divide our problem by half by looking
+    // At the third pin. If it's 0 then only a..d can be our
+    // Possible outputs. If it's 1 then e..h
+    And(a=sel[2], b=sel[2], out=isSecondHalf);
+    Not(in=isSecondHalf, out=isFirstHalf);
+
+
+    // Divide each pairing of the first bit (a|b, c|d, e|f, g|h) "by half"
+    Mux16(a=a, b=b, sel=sel[0], out=ab);
+    Mux16(a=c, b=d, sel=sel[0], out=cd);
+    Mux16(a=e, b=f, sel=sel[0], out=ef);
+    Mux16(a=g, b=h, sel=sel[0], out=gh);
+
+    // Then we divide each pairing of the second bit (ab|cd, ef|gh) by half
+    Mux16(a=ab, b=cd, sel=sel[1], out=abcd);
+    Mux16(a=ef, b=gh, sel=sel[1], out=efgh);
+
+    // Then finally the third bit will tell us whether we go for (abcd | efgh)
+    Mux16(a=abcd, b=efgh, sel=sel[2], out=out);
+}

@@ -1,0 +1,34 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/01/DMux8Way.hdl
+
+/**
+ * 8-way demultiplexor:
+ * {a, b, c, d, e, f, g, h} = {in, 0, 0, 0, 0, 0, 0, 0} if sel == 000
+ *                            {0, in, 0, 0, 0, 0, 0, 0} if sel == 001
+ *                            etc.
+ *                            {0, 0, 0, 0, 0, 0, 0, in} if sel == 111
+ */
+
+CHIP DMux8Way {
+    IN in, sel[3];
+    OUT a, b, c, d, e, f, g, h;
+
+    PARTS:
+    // First look at DMux and DMux4Way of course
+    // Here we divide our problem in half by looking at the
+    // third bit. If that bit is off then our candidates are a | b | c | d,
+    // if it's on then the only outputs that are valid are e | f | g | h.
+    DMux(in=in, sel=sel[2], a=isFirstHalf, b=isSecondHalf);
+
+    // Then we can simply ignore the third bit and pretend we're doing
+    // 4 way DMux by focusing on the first two bits. Nice huh.
+    
+    // isFirstHalf will be 0 here if the third bit is 1
+    DMux4Way(in=isFirstHalf, sel=sel[0..1], a=a, b=b, c=c, d=d);
+
+    // isSecondHalf is only 1 if the third bit is 1
+    DMux4Way(in=isSecondHalf, sel=sel[0..1], a=e, b=f, c=g, d=h);
+    
+}

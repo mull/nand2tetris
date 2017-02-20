@@ -1,0 +1,60 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/01/DMux4Way.hdl
+
+/**
+ * 4-way demultiplexor:
+ * {a, b, c, d} = {in, 0, 0, 0} if sel == 00
+ *                {0, in, 0, 0} if sel == 01
+ *                {0, 0, in, 0} if sel == 10
+ *                {0, 0, 0, in} if sel == 11
+ */
+
+CHIP DMux4Way {
+    IN in, sel[2];
+    OUT a, b, c, d;
+
+    PARTS:
+    // Poorly optimized version(?):
+    // I have to say I prefer this version for readability
+    // but maybe that's just because I haven't wrapped my head
+    // around employing these chips & boolean algebra quite yet
+    // Not(in=sel[0], out=notsel0);
+    // Not(in=sel[1], out=notsel1);
+
+    // And(a=sel[0], b=sel[1], out=bothTrue);
+    // And(a=notsel0, b=notsel1, out=bothFalse);
+    // And(a=sel[0], b=notsel1, out=isB);
+    // And(a=sel[1], b=notsel0, out=isC);
+
+    // And(a=bothFalse, b=in, out=a);
+    // And(a=bothTrue, b=in, out=d);
+    // And(a=isB, b=in, out=b);
+    // And(a=isC, b=in, out=c);
+
+    // Using DMux like we're supposed to I guess. :>
+    // if sel[0] then aORc = in
+    // else bORd = in
+    // so we are essentially moving whatever is in the `in` pin
+    // to either aORc or bORd
+    DMux(in=in, sel=sel[0], a=aORc, b=bORd);
+
+    // So aORc is our PIN to check whether a | c are candidates
+    // As they can only be so when sel[0] is 1
+    // Likewise b | d can only be possible if sel[0] = 1
+    
+    // If neither a | c are candidates then they are both 
+    // set to 0 here, as aORc must be 0
+    // If aORc is 1 the nwe simply check whether the second bit of sel
+    // is 0 or 1
+    DMux(in=aORc, sel=sel[1], a=a, b=c);
+
+    // Likewise if neither b | d are candidates then both of them will be set to 0
+    // If bORd is 1 then we just check the value of the second bit, which if 0
+    // rules out the D pin
+    DMux(in=bORd, sel=sel[1], a=b, b=d);
+
+    // I bang my head against the wall for writing but at the same time
+    // forgetting how it works with seconds T_T
+}
