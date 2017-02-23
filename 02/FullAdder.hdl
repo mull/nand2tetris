@@ -1,0 +1,55 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/02/FullAdder.hdl
+
+/**
+ * Computes the sum of three bits.
+ */
+
+CHIP FullAdder {
+    IN a, b, c;  // 1-bit inputs
+    OUT sum,     // Right bit of a + b + c
+        carry;   // Left bit of a + b + c
+
+    PARTS:
+    // Note to self: See these coments when you no longer understand how this works:
+    // Remember that we're adding three bits to each other but starting from 0,
+    // such as 0 + 1 + 1 + 1 = sum=1 carry=1
+    // 00 + 01 + 01 + 01 = 11
+    // The right bit can only be 1 if all three input bits are 1, 
+    // meaning the sum of a + b + c = 0 (and the carry is 1)
+    // Which is why we look at the carry of a + b and C
+    // 
+
+    // a=1 b=1 c=1
+    //                         carryAb       |    sumAb
+    // a + b  ->                 1           |      0
+    //                       carryBombined   |     sum
+    // sumAb + c  ->             0           |      1
+    //                                     carry
+    // carryAb | carryCombined               1
+    // result                                11
+
+    // a=1 b=1 c=0
+    //                         carryAb       |    sumAb
+    // a + b  ->                 1           |      0
+    //                       carryBombined   |     sum
+    // sumAb + c  ->             0           |      0
+    //                                     carry
+    // carryAb | carryCombined               1
+    // result                                10 
+ 
+    // a=1 b=0 c=1
+    //                         carryAb       |    sumAb
+    // a + b  ->                 0           |      1
+    //                       carryBombined   |     sum
+    // sumAb + c  ->             1           |      0
+    //                                     carry
+    // carryAb | carryCombined               1 
+    // result                                10
+
+    HalfAdder(a=a, b=b, sum=abSum, carry=abCarry);
+    HalfAdder(a=abSum, b=c, sum=sum, carry=combinedCarry);
+    Or(a=abCarry, b=combinedCarry, out=carry);
+}
